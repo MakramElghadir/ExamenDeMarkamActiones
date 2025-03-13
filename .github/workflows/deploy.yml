@@ -22,8 +22,6 @@ jobs:
       env:
         METEOSTAT_API_KEY: ${{ secrets.METEOSTAT_API_KEY }}
       run: |
-        mkdir -p APIcallProof  # Ensure the folder exists
-
         TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")  # Generate timestamp
         FILE_PATH="APIcallProof/weather_data_${TIMESTAMP}.txt"  # Create file name
 
