@@ -1,4 +1,4 @@
-name: Deploy Weather Data
+name: Fetch and Save Weather Data
 
 on:
   push:
@@ -19,15 +19,23 @@ jobs:
     - name: List files
       run: ls -la
 
-    - name: Meteostat API Request
+    - name: Fetch Meteostat API Data and Save to File
       env:
         METEOSTAT_API_KEY: ${{ secrets.METEOSTAT_API_KEY }}
       run: |
         API_URL="https://meteostat.p.rapidapi.com/point/monthly?lat=52.5244&lon=13.4105&alt=43&start=2020-01-01&end=2020-12-31"
-        
+
         RESPONSE=$(curl -s --request GET "$API_URL" \
           --header "x-rapidapi-host: meteostat.p.rapidapi.com" \
           --header "x-rapidapi-key: $METEOSTAT_API_KEY")
 
-        echo "Meteostat API Response:"
-        echo "$RESPONSE" | jq .
+        echo "$RESPONSE" | jq . > weather_data.txt  # Save formatted JSON to file
+
+    - name: Show Generated File
+      run: cat weather_data.txt  # Display the file content in GitHub Actions logs
+
+    - name: Upload weather data as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: weather-data
+        path: weather_data.txt
