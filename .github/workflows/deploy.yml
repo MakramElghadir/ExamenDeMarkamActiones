@@ -23,19 +23,34 @@ jobs:
       env:
         METEOSTAT_API_KEY: ${{ secrets.METEOSTAT_API_KEY }}
       run: |
+        mkdir -p APIcallProof  # Ensure the folder exists
+
+        TIMESTAMP=$(date +"%Y-%m-%d_%H-%M-%S")  # Generate timestamp
+        FILE_PATH="APIcallProof/weather_data_${TIMESTAMP}.txt"  # Create file name
+
         API_URL="https://meteostat.p.rapidapi.com/point/monthly?lat=52.5244&lon=13.4105&alt=43&start=2020-01-01&end=2020-12-31"
 
         RESPONSE=$(curl -s --request GET "$API_URL" \
           --header "x-rapidapi-host: meteostat.p.rapidapi.com" \
           --header "x-rapidapi-key: $METEOSTAT_API_KEY")
 
-        echo "$RESPONSE" | jq . > weather_data.txt  # Save formatted JSON to file
+        echo "$RESPONSE" | jq . > "$FILE_PATH"  # Save formatted JSON to the file
+
+        echo "File saved at: $FILE_PATH"
 
     - name: Show Generated File
-      run: cat weather_data.txt  # Display the file content in GitHub Actions logs
+      run: ls -la APIcallProof  # Show the created file in logs
 
     - name: Upload weather data as artifact
       uses: actions/upload-artifact@v4
       with:
         name: weather-data
-        path: weather_data.txt
+        path: APIcallProof/
+    
+    - name: Commit and Push File to Repository
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+        git add APIcallProof/
+        git commit -m "Add weather data file: $(date +"%Y-%m-%d %H:%M:%S")" || echo "No changes to commit"
+        git push origin main || echo "No changes to push"
