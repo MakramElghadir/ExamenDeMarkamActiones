@@ -1,4 +1,4 @@
-name: Deploy to Linode
+name: Fetch Meteostat Weather Data
 
 on:
   push:
@@ -6,32 +6,27 @@ on:
       - main
 
 jobs:
-  deploy:
+  fetch-weather:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Install sshpass
-      run: sudo apt-get install -y sshpass
-
-    - name: Create .ssh directory
-      run: mkdir -p ~/.ssh
-
-    - name: Add remote host to known_hosts
-      run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+    - name: Install dependencies
+      run: sudo apt-get install -y curl jq
 
     - name: List files
       run: ls -la
 
-    - name: weatherAPI curl
-      run: curl --request GET \
-	          --url https://open-weather13.p.rapidapi.com/city/london/EN \
-	          --header 'x-rapidapi-host: open-weather13.p.rapidapi.com' \
-	          --header 'x-rapidapi-key: 13c0b5407dmsh0c9461e3cdc2a52p1b06a6jsn16255bcd3cf6'
-
-    - name: Copy files via SCP
+    - name: Meteostat API Request
       env:
-        SSHPASS: ${{ secrets.SSH_PASSWORD }}
-      run: sshpass -e scp -r ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/root/website
+        METEOSTAT_API_KEY: ${{ secrets.METEOSTAT_API_KEY }}
+      run: |
+        API_URL="https://meteostat.p.rapidapi.com/point/monthly?lat=52.5244&lon=13.4105&alt=43&start=2020-01-01&end=2020-12-31"
+        RESPONSE=$(curl -s -X GET "$API_URL" \
+          -H "x-rapidapi-host: meteostat.p.rapidapi.com" \
+          -H "x-rapidapi-key: $METEOSTAT_API_KEY")
+
+        echo "Meteostat API Response:"
+        echo "$RESPONSE" | jq .  # Pretty print JSON output
