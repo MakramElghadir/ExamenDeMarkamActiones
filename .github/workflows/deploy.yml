@@ -35,7 +35,7 @@ jobs:
       run: cat weather_data.txt  # Display the file content in GitHub Actions logs
 
     - name: Upload weather data as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: weather-data
         path: weather_data.txt
