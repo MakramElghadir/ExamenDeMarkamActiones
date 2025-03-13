@@ -1,4 +1,4 @@
-name: Fetch Meteostat Weather Data
+name: Deploy Weather Data
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  fetch-weather:
+  weather_api_request:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,9 +24,10 @@ jobs:
         METEOSTAT_API_KEY: ${{ secrets.METEOSTAT_API_KEY }}
       run: |
         API_URL="https://meteostat.p.rapidapi.com/point/monthly?lat=52.5244&lon=13.4105&alt=43&start=2020-01-01&end=2020-12-31"
-        RESPONSE=$(curl -s -X GET "$API_URL" \
-          -H "x-rapidapi-host: meteostat.p.rapidapi.com" \
-          -H "x-rapidapi-key: $METEOSTAT_API_KEY")
+        
+        RESPONSE=$(curl -s --request GET "$API_URL" \
+          --header "x-rapidapi-host: meteostat.p.rapidapi.com" \
+          --header "x-rapidapi-key: $METEOSTAT_API_KEY")
 
         echo "Meteostat API Response:"
-        echo "$RESPONSE" | jq .  # Pretty print JSON output
+        echo "$RESPONSE" | jq .
